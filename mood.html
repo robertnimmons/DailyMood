@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 Mood Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        .calendar-section {
+            flex: 1;
+        }
+
+        .stats-section {
+            width: 300px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .day-cell {
+            font-size: 0.85em;
+        }
+
+        .mood-A-plus { background: #006400; color: white; }
+        .mood-A { background: #2e7d32; color: white; }
+        .mood-B { background: #7cb342; color: white; }
+        .mood-C { background: #ffeb3b; color: black; }
+        .mood-D { background: #ff9800; color: white; }
+        .mood-F { background: #c62828; color: white; }
+        .empty { background: #333; }
+
+        .stats-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .stats-table td {
+            padding: 10px;
+        }
+
+        .stats-label {
+            text-align: left !important;
+            font-weight: normal;
+        }
+
+        .stats-days {
+            width: 60px;
+        }
+
+        .stats-bar {
+            width: 100px;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #ffeb3b;
+            transition: width 0.3s;
+        }
+
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 300px;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+        }
+
+        .mood-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mood-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .mood-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .close-modal {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .export-import-section {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn, .import-btn, .clear-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .export-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .import-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .export-btn:hover, .import-btn:hover, .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .stats-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>2025 Mood Tracker</h1>
+        
+        <div class="export-import-section">
+            <button class="export-btn" onclick="exportData()">📥 Export Data</button>
+            <button class="import-btn" onclick="document.getElementById('importFile').click()">📤 Import Data</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All Data</button>
+        </div>
+        
+        <div class="main-content">
+            <div class="calendar-section">
+                <table id="calendar">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Jan</th>
+                            <th>Feb</th>
+                            <th>Mar</th>
+                            <th>Apr</th>
+                            <th>May</th>
+                            <th>Jun</th>
+                            <th>Jul</th>
+                            <th>Aug</th>
+                            <th>Sep</th>
+                            <th>Oct</th>
+                            <th>Nov</th>
+                            <th>Dec</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendarBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="stats-section">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th colspan="3">Days</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsBody">
+                    </tbody>
+                </table>
+
+                <div class="legend">
+                    <div class="legend-title">Legend:</div>
+                    <div class="legend-item">
+                        <div class="legend-color mood-A-plus"></div>
+                        <span>A+ - Positive core memory</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color mood-A"></div>
+                        <span>A - Very positive</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color mood-B"></div>
+                        <span>B - Positive</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color mood-C"></div>
+                        <span>C - Neutral</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color mood-D"></div>
+                        <span>D - Negative</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color mood-F"></div>
+                        <span>F - Very negative</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalDate"></h2>
+            <div class="mood-buttons">
+                <button class="mood-btn mood-A-plus" onclick="setMood('A+')">A+ - Positive core memory</button>
+                <button class="mood-btn mood-A" onclick="setMood('A')">A - Very positive</button>
+                <button class="mood-btn mood-B" onclick="setMood('B')">B - Positive</button>
+                <button class="mood-btn mood-C" onclick="setMood('C')">C - Neutral</button>
+                <button class="mood-btn mood-D" onclick="setMood('D')">D - Negative</button>
+                <button class="mood-btn mood-F" onclick="setMood('F')">F - Very negative</button>
+            </div>
+            <button class="close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        let currentDay = null;
+        let moods = {};
+
+        function loadMoods() {
+            const saved = localStorage.getItem('moodTracker2025');
+            if (saved) {
+                moods = JSON.parse(saved);
+            }
+        }
+
+        function saveMoods() {
+            localStorage.setItem('moodTracker2025', JSON.stringify(moods));
+        }
+
+        function generateCalendar() {
+            const tbody = document.getElementById('calendarBody');
+            tbody.innerHTML = '';
+
+            for (let day = 1; day <= 31; day++) {
+                const row = document.createElement('tr');
+                const dayCell = document.createElement('td');
+                dayCell.textContent = day;
+                dayCell.className = 'day-cell';
+                row.appendChild(dayCell);
+
+                for (let month = 0; month < 12; month++) {
+                    const cell = document.createElement('td');
+                    
+                    if (day <= daysInMonth[month]) {
+                        const dateKey = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const mood = moods[dateKey];
+                        
+                        if (mood) {
+                            cell.textContent = mood;
+                            cell.className = `mood-${mood.replace('+', '-plus')}`;
+                        } else {
+                            cell.textContent = '';
+                        }
+                        
+                        cell.onclick = () => openModal(dateKey);
+                        cell.style.cursor = 'pointer';
+                    } else {
+                        cell.className = 'empty';
+                    }
+                    
+                    row.appendChild(cell);
+                }
+
+                tbody.appendChild(row);
+            }
+
+            updateStats();
+        }
+
+        function openModal(dateKey) {
+            currentDay = dateKey;
+            const date = new Date(dateKey + 'T00:00:00');
+            document.getElementById('modalDate').textContent = date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            currentDay = null;
+        }
+
+        function setMood(mood) {
+            if (currentDay) {
+                moods[currentDay] = mood;
+                saveMoods();
+                generateCalendar();
+                closeModal();
+            }
+        }
+
+        function updateStats() {
+            const stats = {
+                'A+': 0,
+                'A': 0,
+                'B': 0,
+                'C': 0,
+                'D': 0,
+                'F': 0
+            };
+
+            Object.values(moods).forEach(mood => {
+                if (stats.hasOwnProperty(mood)) {
+                    stats[mood]++;
+                }
+            });
+
+            const total = Object.values(stats).reduce((a, b) => a + b, 0);
+            const statsBody = document.getElementById('statsBody');
+            statsBody.innerHTML = '';
+
+            const moodOrder = ['A+', 'A', 'B', 'C', 'D', 'F'];
+            moodOrder.forEach(mood => {
+                const row = document.createElement('tr');
+                const percentage = total > 0 ? ((stats[mood] / total) * 100).toFixed(2) : 0;
+                
+                row.innerHTML = `
+                    <td class="mood-${mood.replace('+', '-plus')}">${mood}</td>
+                    <td class="stats-days">${String(stats[mood]).padStart(3, '0')}</td>
+                    <td class="stats-bar">
+                        <div class="bar-container">
+                            <div class="bar-fill mood-${mood.replace('+', '-plus')}" style="width: ${percentage}%"></div>
+                        </div>
+                    </td>
+                    <td>${percentage}%</td>
+                `;
+                statsBody.appendChild(row);
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Initialize
+        loadMoods();
+        generateCalendar();
+    </script>
+</body>
+</html>
